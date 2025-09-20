@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>HubSpot Callback</title>
+</head>
+<body>
+  <p>Bitte warten… Sie werden automatisch weitergeleitet.</p>
+  <script>
+    // Hole Code oder Fehler aus der URL
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const error = params.get("error");
+
+    if (error) {
+      // Fehler an die App weiterleiten
+      window.location.href = `introki://hubspot-callback?error=${error}`;
+    } else if (code) {
+      // Erfolgreich → Code an die App weiterleiten
+      window.location.href = `introki://hubspot-callback?code=${code}`;
+    } else {
+      document.body.innerHTML = "<p>Kein Code oder Fehler vorhanden.</p>";
+    }
+  </script>
+</body>
+</html>
