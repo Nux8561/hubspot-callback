@@ -1,26 +1,144 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>HubSpot Callback</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HubSpot Verbindung - Intro KI</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 20px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #667eea;
+        }
+        h1 {
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+        .success {
+            background: rgba(0, 255, 0, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+    </style>
 </head>
 <body>
-  <p>Bitte warten… Sie werden automatisch weitergeleitet.</p>
-  <script>
-    // Hole Code oder Fehler aus der URL
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const error = params.get("error");
+    <div class="container">
+        <div class="logo">🚀</div>
+        <h1>Intro KI</h1>
+        <p>HubSpot wird verbunden...</p>
+        <div class="spinner"></div>
+        <p id="status">Bitte warten...</p>
+    </div>
 
-    if (error) {
-      // Fehler an die App weiterleiten
-      window.location.href = `introki://hubspot-callback?error=${error}`;
-    } else if (code) {
-      // Erfolgreich → Code an die App weiterleiten
-      window.location.href = `introki://hubspot-callback?code=${code}`;
-    } else {
-      document.body.innerHTML = "<p>Kein Code oder Fehler vorhanden.</p>";
-    }
-  </script>
+    <script>
+        console.log('HubSpot Callback Page geladen');
+        
+        // URL Parameter auslesen
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        const error = params.get("error");
+        const state = params.get("state");
+        
+        console.log('URL Parameter:', { code, error, state });
+        
+        const statusElement = document.getElementById('status');
+        
+        if (error) {
+            // Fehlerbehandlung
+            console.error('HubSpot OAuth Fehler:', error);
+            statusElement.innerHTML = `
+                <div class="error">
+                    <strong>Fehler:</strong> ${error}<br>
+                    <small>Die Verbindung konnte nicht hergestellt werden.</small>
+                </div>
+            `;
+            
+            // Weiterleitung zur App mit Fehler
+            setTimeout(() => {
+                window.location.href = `introki://hubspot-callback?error=${encodeURIComponent(error)}`;
+            }, 2000);
+            
+        } else if (code) {
+            // Erfolgreiche Autorisierung
+            console.log('HubSpot OAuth Code erhalten:', code);
+            statusElement.innerHTML = `
+                <div class="success">
+                    <strong>Erfolgreich!</strong><br>
+                    <small>Weiterleitung zur App...</small>
+                </div>
+            `;
+            
+            // Weiterleitung zur App mit Code
+            setTimeout(() => {
+                const redirectUrl = `introki://hubspot-callback?code=${encodeURIComponent(code)}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+                console.log('Weiterleitung zu:', redirectUrl);
+                window.location.href = redirectUrl;
+            }, 1500);
+            
+        } else {
+            // Keine Parameter - möglicherweise direkter Aufruf
+            console.log('Keine OAuth Parameter gefunden');
+            statusElement.innerHTML = `
+                <div class="error">
+                    <strong>Ungültiger Aufruf</strong><br>
+                    <small>Diese Seite sollte nur über HubSpot OAuth aufgerufen werden.</small>
+                </div>
+            `;
+        }
+        
+        // Fallback: Nach 10 Sekunden zur App weiterleiten
+        setTimeout(() => {
+            if (!code && !error) {
+                console.log('Fallback: Weiterleitung zur App');
+                window.location.href = 'introki://hubspot-callback?error=timeout';
+            }
+        }, 10000);
+    </script>
 </body>
 </html>
